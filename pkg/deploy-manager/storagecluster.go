@@ -91,6 +91,9 @@ func (t *DeployManager) DefaultStorageCluster() (*ocsv1.StorageCluster, error) {
 					},
 				},
 			},
+			NFS: &ocsv1.NFSSpec{
+				Enable: true,
+			},
 			// Setting empty ResourceLists to prevent ocs-operator from setting the
 			// default resource requirements
 			Resources: map[string]corev1.ResourceRequirements{
