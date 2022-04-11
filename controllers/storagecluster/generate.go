@@ -47,6 +47,10 @@ func generateNameForCephFilesystemSC(initData *ocsv1.StorageCluster) string {
 	return fmt.Sprintf("%s-cephfs", initData.Name)
 }
 
+func generateNameForCephNetworkFilesystemSC(initData *ocsv1.StorageCluster) string {
+	return fmt.Sprintf("%s-ceph-nfs", initData.Name)
+}
+
 func generateNameForCephBlockPoolSC(initData *ocsv1.StorageCluster) string {
 	return fmt.Sprintf("%s-ceph-rbd", initData.Name)
 }

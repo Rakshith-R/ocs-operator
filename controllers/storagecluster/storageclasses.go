@@ -194,6 +194,38 @@ func newCephFilesystemStorageClassConfiguration(initData *ocsv1.StorageCluster) 
 	}
 }
 
+// newCephFilesystemStorageClassConfiguration generates configuration options for a Ceph Filesystem StorageClass.
+func newCephNetworkFilesystemStorageClassConfiguration(initData *ocsv1.StorageCluster) StorageClassConfiguration {
+	persistentVolumeReclaimDelete := corev1.PersistentVolumeReclaimDelete
+	allowVolumeExpansion := false
+	return StorageClassConfiguration{
+		storageClass: &storagev1.StorageClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: generateNameForCephNetworkFilesystemSC(initData),
+				Annotations: map[string]string{
+					"description": "Provides RWO and RWX Filesystem volumes",
+				},
+			},
+			Provisioner:   fmt.Sprintf("%s.nfs.csi.ceph.com", initData.Namespace),
+			ReclaimPolicy: &persistentVolumeReclaimDelete,
+			// AllowVolumeExpansion is set to true to enable expansion of OCS backed Volumes
+			AllowVolumeExpansion: &allowVolumeExpansion,
+			Parameters: map[string]string{
+				"clusterID":  initData.Namespace,
+				"nfsCluster": generateNameForCephNetworkFilesystem(initData),
+				"fsName":     fmt.Sprintf("%s-cephfilesystem", initData.Name),
+				"server":     generateNameForNFSService(initData),
+				"csi.storage.k8s.io/provisioner-secret-name":            "rook-csi-cephfs-provisioner",
+				"csi.storage.k8s.io/provisioner-secret-namespace":       initData.Namespace,
+				"csi.storage.k8s.io/node-stage-secret-name":             "rook-csi-cephfs-node",
+				"csi.storage.k8s.io/node-stage-secret-namespace":        initData.Namespace,
+				"csi.storage.k8s.io/controller-expand-secret-name":      "rook-csi-cephfs-provisioner",
+				"csi.storage.k8s.io/controller-expand-secret-namespace": initData.Namespace,
+			},
+		},
+	}
+}
+
 // newCephBlockPoolStorageClassConfiguration generates configuration options for a Ceph Block Pool StorageClass.
 func newCephBlockPoolStorageClassConfiguration(initData *ocsv1.StorageCluster) StorageClassConfiguration {
 	persistentVolumeReclaimDelete := corev1.PersistentVolumeReclaimDelete
@@ -276,6 +308,9 @@ func (r *StorageClusterReconciler) newStorageClassConfigurations(initData *ocsv1
 	ret := []StorageClassConfiguration{
 		newCephFilesystemStorageClassConfiguration(initData),
 		newCephBlockPoolStorageClassConfiguration(initData),
+	}
+	if initData.Spec.NFS != nil && initData.Spec.NFS.Enable {
+		ret = append(ret, newCephNetworkFilesystemStorageClassConfiguration(initData))
 	}
 	// OBC storageclass will be returned only in TWO conditions,
 	// a. either 'externalStorage' is enabled
