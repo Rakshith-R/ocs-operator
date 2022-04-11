@@ -41,7 +41,7 @@ func TestNFSService(t *testing.T) {
 func assertNFSSService(t *testing.T, reconciler StorageClusterReconciler, cr *api.StorageCluster, request reconcile.Request) {
 	actualNfsS := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "ocsinit-cephnetworkfilesystem-service",
+			Name: "ocsinit-cephnfs-service",
 		},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
@@ -52,12 +52,12 @@ func assertNFSSService(t *testing.T, reconciler StorageClusterReconciler, cr *ap
 			},
 			Selector: map[string]string{
 				"app":      "rook-ceph-nfs",
-				"ceph_nfs": "ocsinit-cephnetworkfilesystem-service",
+				"ceph_nfs": "ocsinit-cephnfs",
 			},
 			SessionAffinity: "ClientIP",
 		},
 	}
-	request.Name = "ocsinit-cephnetworkfilesystem-service"
+	request.Name = "ocsinit-cephnfs-service"
 	err := reconciler.Client.Get(context.TODO(), request.NamespacedName, actualNfsS)
 	assert.NoError(t, err)
 

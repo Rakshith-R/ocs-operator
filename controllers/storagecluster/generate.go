@@ -20,7 +20,7 @@ func generateNameForCephFilesystem(initData *ocsv1.StorageCluster) string {
 }
 
 func generateNameForCephNetworkFilesystem(initData *ocsv1.StorageCluster) string {
-	return fmt.Sprintf("%s-cephnetworkfilesystem", initData.Name)
+	return fmt.Sprintf("%s-cephnfs", initData.Name)
 }
 
 func generateNameForNFSService(initData *ocsv1.StorageCluster) string {

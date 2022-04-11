@@ -3,13 +3,13 @@ export GO111MODULE=on
 # Enable GOPROXY. This speeds up a lot of vendoring operations.
 export GOPROXY=https://proxy.golang.org
 # Export GOROOT. Required for OPERATOR_SDK to work correctly for generate commands.
-export GOROOT=$(shell go env GOROOT)
+export GOROOT=/usr/local/go
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
-else
-GOBIN=$(shell go env GOBIN)
-endif
+# ifeq (,$(shell go env GOBIN))
+GOBIN=/home/rakshith/workspace/bin
+# else
+# GOBIN=$(shell go env GOBIN)
+# endif
 
 KUSTOMIZE_VERSION=v4.5.2
 CONTROLLER_GEN_VERSION=v0.8.0
@@ -199,35 +199,35 @@ run: manifests generate
 
 # find or download controller-gen if necessary
 controller-gen:
-ifneq ($(CONTROLLER_GEN_VERSION), $(shell controller-gen --version | awk -F ":" '{print $2}'))
-	@{ \
-	echo "Installing controller-gen@$(CONTROLLER_GEN_VERSION)" ;\
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION) ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
-	echo "Installed controller-gen@$(CONTROLLER_GEN_VERSION)" ;\
-	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
-else
-CONTROLLER_GEN=$(shell which controller-gen)
-endif
+# ifneq ($(CONTROLLER_GEN_VERSION), $(shell controller-gen --version | awk -F ":" '{print $2}'))
+# 	@{ \
+# 	echo "Installing controller-gen@$(CONTROLLER_GEN_VERSION)" ;\
+# 	set -e ;\
+# 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
+# 	cd $$CONTROLLER_GEN_TMP_DIR ;\
+# 	go mod init tmp ;\
+# 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION) ;\
+# 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+# 	echo "Installed controller-gen@$(CONTROLLER_GEN_VERSION)" ;\
+# 	}
+# CONTROLLER_GEN=$(GOBIN)/controller-gen
+# else
+CONTROLLER_GEN=controller-gen
+# endif
 
 kustomize:
-ifeq (, $(shell which kustomize))
-	@{ \
-	echo "Installing kustomize/v4@${KUSTOMIZE_VERSION}" ;\
-	set -e ;\
-	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION} ;\
-	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
-	echo "Installed kustomize/v4@${KUSTOMIZE_VERSION}" ;\
-	}
-export KUSTOMIZE=$(GOBIN)/kustomize
-else
-export KUSTOMIZE=$(shell which kustomize)
-endif
+# ifeq (, $(shell which kustomize))
+# 	@{ \
+# 	echo "Installing kustomize/v4@${KUSTOMIZE_VERSION}" ;\
+# 	set -e ;\
+# 	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
+# 	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
+# 	go mod init tmp ;\
+# 	go get sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION} ;\
+# 	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
+# 	echo "Installed kustomize/v4@${KUSTOMIZE_VERSION}" ;\
+# 	}
+# export KUSTOMIZE=$(GOBIN)/kustomize
+# else
+export KUSTOMIZE=kustomize
+# endif
