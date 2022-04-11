@@ -14,6 +14,7 @@ import (
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,6 +43,9 @@ func createStorageCluster(scName, failureDomainName string,
 		Spec: api.StorageClusterSpec{
 			Monitoring: &api.MonitoringSpec{
 				ReconcileStrategy: string(ReconcileStrategyIgnore),
+			},
+			NFS: &api.NFSSpec{
+				Enable: true,
 			},
 		},
 		Status: api.StorageClusterStatus{
@@ -72,6 +76,16 @@ func createUpdateRuntimeObjects(t *testing.T, cp *Platform, r StorageClusterReco
 			Name: "ocsinit-cephfilesystem",
 		},
 	}
+	cnfs := &cephv1.CephNFS{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "ocsinit-cephnetworkfilesystem",
+		},
+	}
+	nfss := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "ocsinit-cephnetworkfilesystem",
+		},
+	}
 	cbp := &cephv1.CephBlockPool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "ocsinit-cephblockpool",
@@ -82,7 +96,7 @@ func createUpdateRuntimeObjects(t *testing.T, cp *Platform, r StorageClusterReco
 			Name: "ocsinit-cephrbdmirror",
 		},
 	}
-	updateRTObjects := []client.Object{csfs, csrbd, cfs, cbp, crm}
+	updateRTObjects := []client.Object{csfs, csrbd, cfs, cnfs, nfss, cbp, crm}
 
 	skip, err := r.PlatformsShouldSkipObjectStore()
 	assert.NoError(t, err)
@@ -181,6 +195,17 @@ func createFakeInitializationStorageClusterReconcilerWithPlatform(t *testing.T,
 		},
 	}
 
+	cnfs := &cephv1.CephNFS{
+		ObjectMeta: metav1.ObjectMeta{Name: "ocsinit-cephnetworkfilesystem"},
+		Status: &cephv1.Status{
+			Phase: util.PhaseReady,
+		},
+	}
+
+	nfss := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "ocsinit-cephnetworkfilesystem"},
+	}
+
 	cbp := &cephv1.CephBlockPool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "ocsinit-cephblockpool",
@@ -190,7 +215,7 @@ func createFakeInitializationStorageClusterReconcilerWithPlatform(t *testing.T,
 		},
 	}
 
-	obj = append(obj, mockNodeList.DeepCopy(), cbp, cfs)
+	obj = append(obj, mockNodeList.DeepCopy(), cbp, cfs, cnfs, nfss)
 	client := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(obj...).Build()
 	if platform == nil {
 		platform = &Platform{platform: configv1.NonePlatformType}
